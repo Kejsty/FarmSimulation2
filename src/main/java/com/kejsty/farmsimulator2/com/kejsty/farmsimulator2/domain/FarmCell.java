@@ -1,4 +1,4 @@
-package com.kejsty.farmsimulator2;
+package com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.domain;
 
 import java.util.LinkedList;
 import java.util.Random;
@@ -7,28 +7,24 @@ import java.util.Random;
  * Created by Kejsty on 13/02/15.
  */
 public class FarmCell {
+
+    private static final Random random = new Random();
+
     private boolean grass;
     private int grassCounter;
     private int positionX;
     private int positionY;
-    public LinkedList<Animal> sheeps;
-    public LinkedList<Animal> wolfs;
+    public final LinkedList<Animal> sheeps = new LinkedList<Animal>();
+    public final LinkedList<Animal> wolfs = new LinkedList<Animal>();
 
     public FarmCell() {
-        grass = getRandomBoolean();
-        sheeps = new LinkedList<Animal>();
-        wolfs = new LinkedList<Animal>();
-        positionX = 0;
-        positionY = 0;
-
+        grass = random.nextBoolean();
     }
 
     public FarmCell(int positionX, int positionY) {
-        grass = getRandomBoolean();
+        this();
         this.positionX = positionX;
         this.positionY = positionY;
-        sheeps = new LinkedList<Animal>();
-        wolfs = new LinkedList<Animal>();
     }
 
     public void setPositionX(int positionX) {
@@ -46,15 +42,19 @@ public class FarmCell {
     public int getPositionX(){
         return this.positionX;
     }
+
     public int getPositionY(){
         return this.positionY;
     }
+
     public int getGrassCounter(){
         return this.grassCounter;
     }
+
     public void increaseGrassCounter(){
         this.grassCounter++;
     }
+
     public void deleteGrassCounter(){
         this.grassCounter = 0;
     }
@@ -63,18 +63,22 @@ public class FarmCell {
         return this.grass;
     }
 
-    public boolean getRandomBoolean() {
-        Random random = new Random();
-        return random.nextBoolean();
+    public LinkedList<Animal> getSheeps() {
+        return sheeps;
     }
 
+    public LinkedList<Animal> getWolfs() {
+        return wolfs;
+    }
+
+
     public void moveAnimals() {
-        for (int counter = 0; counter < sheeps.size(); counter++) {
-            sheeps.get(counter).moveAnimal();
+        for (Animal sheep : sheeps) {
+            sheep.moveAnimal();
 
         }
-        for (int counter = 0; counter < wolfs.size(); counter++) {
-            wolfs.get(counter).moveAnimal();
+        for (Animal wolf : wolfs) {
+            wolf.moveAnimal();
         }
     }
 }
