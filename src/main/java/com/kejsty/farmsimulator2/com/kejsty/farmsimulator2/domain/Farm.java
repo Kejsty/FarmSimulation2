@@ -1,13 +1,17 @@
-package com.kejsty.farmsimulator2;
+package com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.domain;
 
+import java.util.List;
 import java.util.Random;
 
 /**
  * Created by Kejsty on 13/02/15.
  */
 public class Farm {
-    public static int sizeOfFarm;
-    public FarmCell[][] farm;
+
+    public static final Random random = new Random();
+
+    public static int sizeOfFarm; // shouldn't be public and even static
+    public final FarmCell[][] farm; // shouldn't be public
     //statistic information
     private int diedWolfsInCycle;
     private int diedSheepsInCycle;
@@ -25,12 +29,6 @@ public class Farm {
                 createdFarm[row][column] = createdCell;
             }
         }
-        diedWolfsInCycle = 0;
-        diedSheepsInCycle = 0;
-        numberOfGrassEaten = 0;
-        numberOfSheepsEaten = 0;
-        numberOfSheepsBorn = 0;
-        numberOfWolfsBorn = 0;
         this.farm = createdFarm;
     }
 
@@ -81,51 +79,54 @@ public class Farm {
         this.diedSheepsInCycle = 0;
         this.numberOfGrassEaten = 0;
         this.numberOfSheepsEaten = 0;
-        Random random = new Random();
+
         for (int row = 0; row < sizeOfFarm; row++)
             for (int column = 0; column < sizeOfFarm; column++) {
+                FarmCell currentFarmCell = this.farm[row][column];
                 //wolfs are getting hungry and eating sheep
-                for (int counter = 0; counter < this.farm[row][column].wolfs.size(); counter++) {
-                    this.farm[row][column].wolfs.get(counter).increaseLevelOfHungry();
-                    if (this.farm[row][column].wolfs.get(counter).isHungryToDeath()) {
-                        this.farm[row][column].wolfs.remove(counter);
+                List<Animal> wolfs = currentFarmCell.getWolfs();
+                for (int counter = 0; counter < wolfs.size(); counter++) {
+                    wolfs.get(counter).increaseLevelOfHungry();
+                    if (wolfs.get(counter).isHungryToDeath()) {
+                        wolfs.remove(counter);
                         counter--;
                         this.increaseDiedWolfsInCycle();
                     }
                 }
-                for (int counter = 0; counter < this.farm[row][column].wolfs.size(); counter++) {
-                    if (this.farm[row][column].sheeps.size() > 0) {
+                List<Animal> sheeps = currentFarmCell.getSheeps();
+                for (Animal wolf : wolfs) {
+                    if (sheeps.size() > 0) {
                         //System.out.println("on FarmCell " + this.farm[row][column].getPositionX() + "x" + this.farm[row][column].getPositionY());
-                        int randomSheep = random.nextInt(this.farm[row][column].sheeps.size());
-                        this.farm[row][column].sheeps.remove(randomSheep);
+                        int randomSheep = random.nextInt(sheeps.size());
+                        sheeps.remove(randomSheep);
                         this.increaseDiedSheepsInCycle();
-                        this.farm[row][column].wolfs.get(counter).eraseLevelOfHungry();
+                        wolf.eraseLevelOfHungry();
                         this.increaseNumberOfSheepsEaten();
                     }
                 }
                 //sheeps are also getting hungry
-                for (int counter = 0; counter < this.farm[row][column].sheeps.size(); counter++) {
-                    this.farm[row][column].sheeps.get(counter).increaseLevelOfHungry();
-                    if (this.farm[row][column].sheeps.get(counter).isHungryToDeath()) {
-                        this.farm[row][column].sheeps.remove(counter);
+                for (int counter = 0; counter < sheeps.size(); counter++) {
+                    sheeps.get(counter).increaseLevelOfHungry();
+                    if (sheeps.get(counter).isHungryToDeath()) {
+                        sheeps.remove(counter);
                         counter--;
                         this.increaseDiedSheepsInCycle();
                     }
                 }
                 //and they are eastin grass
 
-                if (this.farm[row][column].getGrass()) {
-                    if (this.farm[row][column].sheeps.size() != 0) {
-                        int randomSheep = random.nextInt(this.farm[row][column].sheeps.size());
-                        this.farm[row][column].sheeps.get(randomSheep).eraseLevelOfHungry();
-                        this.farm[row][column].setGrass(false);
+                if (currentFarmCell.getGrass()) {
+                    if (currentFarmCell.sheeps.size() != 0) {
+                        int randomSheep = random.nextInt(sheeps.size());
+                        sheeps.get(randomSheep).eraseLevelOfHungry();
+                        currentFarmCell.setGrass(false);
                         this.increaseNumberOfGrassEaten();
                     }
                 } else {
-                    this.farm[row][column].increaseGrassCounter();
-                    if (this.farm[row][column].getGrassCounter() > 2){
-                        this.farm[row][column].setGrass(true);
-                        this.farm[row][column].deleteGrassCounter();
+                    currentFarmCell.increaseGrassCounter();
+                    if (currentFarmCell.getGrassCounter() > 2){
+                        currentFarmCell.setGrass(true);
+                        currentFarmCell.deleteGrassCounter();
                     }
                 }
             }
@@ -137,22 +138,24 @@ public class Farm {
         this.numberOfWolfsBorn = 0;
         for (int row = 0; row < sizeOfFarm; row++)
             for (int column = 0; column < sizeOfFarm; column++) {
-                if (this.farm[row][column].sheeps.size() > 1) {
+                FarmCell currentFarmCell = this.farm[row][column];
+                if (currentFarmCell.sheeps.size() > 1) {
                     Animal animal = new Animal();
                     this.increaseNumberOfSheepsBorn();
                     animal.setPositionX(row);
                     animal.setPositionY(column);
-                    this.farm[row][column].sheeps.addLast(animal);
+                    currentFarmCell.sheeps.addLast(animal);
                 }
             }
         for (int row = 0; row < sizeOfFarm; row++)
             for (int column = 0; column < sizeOfFarm; column++) {
-                if (this.farm[row][column].wolfs.size() > 1) {
+                FarmCell currentFarmCell = this.farm[row][column];
+                if (currentFarmCell.wolfs.size() > 1) {
                     Animal animal = new Animal();
                     this.increaseNumberOfWolfsBorn();
                     animal.setPositionX(row);
                     animal.setPositionY(column);
-                    this.farm[row][column].wolfs.addLast(animal);
+                    currentFarmCell.wolfs.addLast(animal);
                 }
             }
     }

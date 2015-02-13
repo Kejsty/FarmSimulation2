@@ -1,19 +1,28 @@
 package com.kejsty.farmsimulator2;
 
+import com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.domain.Animal;
+import com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.domain.Farm;
+import com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.util.ReportMaker;
+import com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.util.Results;
+import com.kejsty.farmsimulator2.com.kejsty.farmsimulator2.util.Timer;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Kejsty on 13/02/15.
  */
-public class RunFarmSimulator {
-    private List<Results> allResults = new ArrayList<Results>();
+public class SimulationRunner {
 
-    RunFarmSimulator(int numberOfRepeatings, int sizeOfFarm, int numberOfSheeps, int numberOfWolfs) {
+    private List<Results> allResults;
+    private final Farm farm;
+
+    SimulationRunner(int sizeOfFarm, int numberOfSheep, int numberOfWolfs) {
         this.allResults = new ArrayList<Results>();
-        Farm farm = new Farm(sizeOfFarm);
+        farm = new Farm(sizeOfFarm);
 
-        for (int i = 0; i < numberOfSheeps; i++) {
+        for (int i = 0; i < numberOfSheep; i++) {
             Animal sheep = new Animal();
             farm.farm[sheep.getPositionX()][sheep.getPositionY()].sheeps.add(sheep);
         }
@@ -21,15 +30,21 @@ public class RunFarmSimulator {
             Animal wolf = new Animal();
             farm.farm[wolf.getPositionX()][wolf.getPositionY()].wolfs.add(wolf);
         }
-        System.out.println("Beginning: /n You have Farm " + sizeOfFarm + "x" + sizeOfFarm + " big");
-        System.out.println("At the Farm you have " + numberOfSheeps + " sheeps, " + numberOfWolfs + " wolfs and " + farm.getNumberOfGrass() + " cells of Grass");
+    }
+
+    public void runSimulation(int iterations) {
+        System.out.println("Beginning: /n You have Farm " + farm.sizeOfFarm + "x" + farm.sizeOfFarm + " big");
+        System.out.println("At the Farm you have " + farm.getNumberOfSheeps() + " sheeps, " + farm.getNumberOfSheeps() + " wolfs and " + farm.getNumberOfGrass() + " cells of Grass");
         System.out.println("After setting the animals on farm u have " + farm.getNumberOfSheeps() + " sheeps, " + farm.getNumberOfWolfs() + " wolfs and " + farm.getNumberOfGrass() + " cells of Grass");
-        for (int repeating = 0; repeating < numberOfRepeatings; repeating++) {
+
+        Timer timer = new Timer();
+        for (int repeating = 0; repeating < iterations; repeating++) {
+            timer.startTimer();
             farm.simulationOfEating();
             farm.simulationOfLife();
             farm.moveAnimals();
-            Results result = new Results();
-            this.allResults.add(result.addResults(repeating, farm.getNumberOfSheeps(), farm.getNumberOfWolfs(), farm.getNumberOfGrass()));
+            timer.stopTimer();
+            this.allResults.add(new Results(repeating, farm.getNumberOfSheeps(), farm.getNumberOfWolfs(), farm.getNumberOfGrass(), timer.getTotalTime()));
         }
 
           /*  System.out.println("After cycle nr." + repeating + ":");
@@ -43,6 +58,7 @@ public class RunFarmSimulator {
             */
 
         System.out.println(this.allResults.toString());
+        ReportMaker.chart(new File("OutputFile.png"), allResults, "Simulation over " + iterations + " iterations");
     }
 
     public List<Results> getAllResults(){
